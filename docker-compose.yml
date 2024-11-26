@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
       context: .
     ports:
-      - 5001:5001
+      - 4000:4000
     env_file:
       - .env.docker
     volumes:
