@@ -1,52 +1,63 @@
 import { FastifyInstance } from 'fastify';
 import * as controllers from '../controllers';
-import { utils } from '../utils';
-import { loginSchema, signupSchema } from '../schemas/User';
 
-async function userRouter(fastify: FastifyInstance) {
-  fastify.post(
-    '/login',
+export async function userRouter(fastify: FastifyInstance) {
+  fastify.get(
+    '/me',
     {
       schema: {
-        body: {
+        tags: ['user'],
+        summary: 'Get current user',
+        description: 'Endpoint to retrieve the current authenticated user',
+        headers: {
           type: 'object',
-          required: ['email', 'password'],
+          required: ['authorization'],
           properties: {
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 8 },
+            authorization: { type: 'string', description: 'JWT token' },
+          },
+        },
+        response: {
+          200: {
+            description: 'Successful response',
+            type: 'object',
+            properties: {
+              user: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  email: { type: 'string', format: 'email' },
+                  created_at: { type: 'string', format: 'date-time' },
+                  updated_at: { type: 'string', format: 'date-time' },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+            },
           },
         },
       },
-      config: {
-        description: 'User login endpoint',
+      preValidation: (req, reply, done) => {
+        const { authorization } = req.headers;
+        if (!authorization) {
+          return reply
+            .status(400)
+            .send({ message: 'Authorization header is missing' });
+        }
+        done();
       },
-      preValidation: utils.preValidation(loginSchema),
     },
-    controllers.login,
-  );
-
-  fastify.post(
-    '/signup',
-    {
-      schema: {
-        body: {
-          type: 'object',
-          required: ['email', 'password'],
-          properties: {
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 8 },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-          },
-        },
-      },
-      config: {
-        description: 'User signup endpoint',
-      },
-      preValidation: utils.preValidation(signupSchema),
-    },
-    controllers.signUp,
+    controllers.getMe,
   );
 }
-
-export default userRouter;

@@ -1,6 +1,5 @@
-import { utils } from '../utils';
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { prisma } from '../utils';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { prisma, utils } from '../utils';
 import { ERRORS } from './errors.helper';
 
 export const checkValidRequest = (
@@ -15,11 +14,14 @@ export const checkValidRequest = (
   }
 
   const decoded = utils.verifyToken(token);
-  if (!decoded) {
+  if (!decoded || typeof decoded === 'string') {
     return reply
       .code(ERRORS.unauthorizedAccess.statusCode)
       .send(ERRORS.unauthorizedAccess.message);
   }
+
+  // Optionally attach the decoded payload to the request object
+  request['decoded'] = decoded;
 };
 
 export const checkValidUser = async (
@@ -34,7 +36,7 @@ export const checkValidUser = async (
   }
 
   const decoded = utils.verifyToken(token);
-  if (!decoded || !decoded.id) {
+  if (!decoded || typeof decoded === 'string' || !decoded.id) {
     return reply
       .code(ERRORS.unauthorizedAccess.statusCode)
       .send(ERRORS.unauthorizedAccess.message);
@@ -50,8 +52,9 @@ export const checkValidUser = async (
         .send(ERRORS.unauthorizedAccess.message);
     }
 
+    // Attach the user data to the request object
     request['authUser'] = userData;
-  } catch (e) {
+  } catch {
     return reply
       .code(ERRORS.unauthorizedAccess.statusCode)
       .send(ERRORS.unauthorizedAccess.message);

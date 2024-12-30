@@ -2,15 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma/
 
-RUN npm install --legacy-peer-deps
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
-RUN npm run db:gen
+RUN pnpm run db:gen
 
 COPY . .
 
 EXPOSE 5001
 
-CMD [ "npm", "run", "dev" ]
+CMD [ "pnpm", "run", "dev" ]

@@ -1,8 +1,9 @@
-import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 import * as JWT from 'jsonwebtoken';
-import Joi from 'joi';
+
 import { FastifyReply, FastifyRequest } from 'fastify';
+import Joi from 'joi';
 
 export const prisma = new PrismaClient();
 
@@ -10,7 +11,7 @@ export const utils = {
   isJSON: (data: string) => {
     try {
       JSON.parse(data);
-    } catch (e) {
+    } catch {
       return false;
     }
     return true;
@@ -57,16 +58,16 @@ export const utils = {
     return token || null;
   },
 
-  verifyToken: (token: string): any => {
+  verifyToken: (token: string) => {
     try {
       return JWT.verify(token, process.env.APP_JWT_SECRET as string);
-    } catch (err) {
+    } catch {
       return null;
     }
   },
 
   validateSchema: (schema: Joi.ObjectSchema) => {
-    return (data: any) => {
+    return (data: unknown) => {
       const { error } = schema.validate(data);
       if (error) {
         throw new Error(error.details[0].message);
@@ -77,7 +78,7 @@ export const utils = {
   preValidation: (schema: Joi.ObjectSchema) => {
     return (
       request: FastifyRequest,
-      reply: FastifyReply,
+      _reply: FastifyReply,
       done: (err?: Error) => void,
     ) => {
       const { error } = schema.validate(request.body);

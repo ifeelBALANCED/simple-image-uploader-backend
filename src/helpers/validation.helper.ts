@@ -1,10 +1,10 @@
-import Joi from 'joi';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import Joi from 'joi';
 
 export const validateSchema = (schema: Joi.ObjectSchema) => {
   return (
     request: FastifyRequest,
-    reply: FastifyReply,
+    _reply: FastifyReply,
     done: (err?: Error) => void,
   ) => {
     try {
